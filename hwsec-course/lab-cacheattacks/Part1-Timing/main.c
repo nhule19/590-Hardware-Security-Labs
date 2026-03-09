@@ -58,8 +58,8 @@ int main (int ac, char **av) {
     // ======
     //
     for (int i = 0; i < SAMPLES; i++) {
-        tmp = eviction_buffer[i];
-        tmp = target_buffer[i];
+        tmp = eviction_buffer[0];
+        tmp = target_buffer[0];
         l2_latency[i] = measure_one_block_access_time((uint64_t)target_buffer);
     }
 
@@ -68,8 +68,8 @@ int main (int ac, char **av) {
     // ======
     //
     for (int i = 0; i < SAMPLES; i++) {
-        tmp = eviction_buffer[i];
-        tmp = target_buffer[i];
+        tmp = eviction_buffer[0];
+        tmp = target_buffer[0];
         l3_latency[i] = measure_one_block_access_time((uint64_t)target_buffer);
     }
 
