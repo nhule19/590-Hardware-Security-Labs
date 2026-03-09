@@ -86,7 +86,7 @@ int main (int ac, char **av) {
     // Print the results to the screen
     // [1.5] Change print_results to print_results_for_python so that your code will work
     // with the python plotter software
-    print_results(dram_latency, l1_latency, l2_latency, l3_latency);
+    print_results_for_python(dram_latency, l1_latency, l2_latency, l3_latency);
 
     free(target_buffer);
 
