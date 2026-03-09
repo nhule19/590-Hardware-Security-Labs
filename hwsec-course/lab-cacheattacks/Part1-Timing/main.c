@@ -1,4 +1,5 @@
 #include "utility.h"
+#include <stddef.h>
 #include <stdint.h>
 
 // TODO: Uncomment the following lines and fill in the correct size
@@ -32,7 +33,12 @@ int main (int ac, char **av) {
 
     // [1.2] TODO: Uncomment the following line to allocate a buffer of a size
     // of your chosing. This will help you measure the latencies at L2 and L3.
-    uint64_t *eviction_buffer = (uint64_t *)malloc(L1_SIZE);
+    uint64_t *eviction_buffer = (uint64_t *)malloc(L3_SIZE + 2000000);
+
+    if (eviction_buffer == NULL) {
+        perror("Unable to malloc eviction buffer");
+        return EXIT_FAILURE;
+    }
 
     // Example: Measure L1 access latency, store results in l1_latency array
     for (int i=0; i<SAMPLES; i++){
@@ -58,7 +64,7 @@ int main (int ac, char **av) {
     //
     for (int i = 0; i < SAMPLES; i++) {
         tmp = target_buffer[0];
-        for (int j = 0; j < (L1_SIZE + 32000) / 8; j++) {
+        for (size_t j = 0; j < (L1_SIZE + 32000) / 8; j++) {
             tmp = eviction_buffer[j];
         }
         l2_latency[i] = measure_one_block_access_time((uint64_t)target_buffer);
