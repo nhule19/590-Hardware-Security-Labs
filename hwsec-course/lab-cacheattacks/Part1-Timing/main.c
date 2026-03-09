@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 // TODO: Uncomment the following lines and fill in the correct size
-#define L1_SIZE 32678
+#define L1_SIZE 32768
 #define L2_SIZE 1048576
 #define L3_SIZE 11534336
  
@@ -64,7 +64,7 @@ int main (int ac, char **av) {
     //
     for (int i = 0; i < SAMPLES; i++) {
         tmp = target_buffer[0];
-        for (size_t j = 0; j < (L1_SIZE + 32000); j++) {
+        for (size_t j = 0; j < (L1_SIZE + 16000) / sizeof(uint64_t); j++) {
             tmp = eviction_buffer[j];
         }
         l2_latency[i] = measure_one_block_access_time((uint64_t)target_buffer);
@@ -77,7 +77,7 @@ int main (int ac, char **av) {
     //
     for (int i = 0; i < SAMPLES; i++) {
         tmp = target_buffer[0];
-        for (size_t j = 0; j < (L1_SIZE + L2_SIZE + 32000); j++) {
+        for (size_t j = 0; j < (L1_SIZE + L2_SIZE + 32000) / sizeof(uint64_t); j++) {
             tmp = eviction_buffer[j];
         }
         l3_latency[i] = measure_one_block_access_time((uint64_t)target_buffer);
