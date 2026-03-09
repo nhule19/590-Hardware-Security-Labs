@@ -2,9 +2,9 @@
 #include <stdint.h>
 
 // TODO: Uncomment the following lines and fill in the correct size
-//#define L1_SIZE [TODO]
-//#define L2_SIZE [TODO]
-//#define L3_SIZE [TODO]
+#define L1_SIZE = 64
+#define L2_SIZE = 64
+#define L3_SIZE = 64
  
 int main (int ac, char **av) {
 
@@ -69,7 +69,8 @@ int main (int ac, char **av) {
     //
     for (int i = 0; i < SAMPLES; i++) {
         tmp = eviction_buffer[i];
-        l3_latency[i] = measure_one_block_access_time((uint64_t)eviction_buffer);
+        tmp = target_buffer[i];
+        l3_latency[i] = measure_one_block_access_time((uint64_t)target_buffer);
     }
 
     // Print the results to the screen
