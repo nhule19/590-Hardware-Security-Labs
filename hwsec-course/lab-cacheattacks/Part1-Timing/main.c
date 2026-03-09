@@ -76,9 +76,11 @@ int main (int ac, char **av) {
     // ======
     //
     for (int i = 0; i < SAMPLES; i++) {
-        tmp = eviction_buffer[0];
         tmp = target_buffer[0];
-        l3_latency[i] = measure_one_block_access_time((uint64_t)target_buffer);
+        for (size_t j = 0; j < (L1_SIZE + L2_SIZE + 32000) / 8; j++) {
+            tmp = eviction_buffer[j];
+        }
+        l2_latency[i] = measure_one_block_access_time((uint64_t)target_buffer);
     }
 
     // Print the results to the screen
