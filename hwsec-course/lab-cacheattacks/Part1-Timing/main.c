@@ -49,6 +49,7 @@ int main (int ac, char **av) {
     //
     for (int i = 0; i < SAMPLES; i++) {
         tmp = eviction_buffer[i];
+        clflush(eviction_buffer);
         dram_latency[i] = measure_one_block_access_time((uint64_t)eviction_buffer);
     }
 
@@ -58,7 +59,8 @@ int main (int ac, char **av) {
     //
     for (int i = 0; i < SAMPLES; i++) {
         tmp = eviction_buffer[i];
-        l2_latency[i] = measure_one_block_access_time((uint64_t)eviction_buffer);
+        tmp = target_buffer[i];
+        l2_latency[i] = measure_one_block_access_time((uint64_t)target_buffer);
     }
 
     // ======
