@@ -42,7 +42,6 @@ int main(int argc, char **argv)
             bit = 1;
         else
             bit = 0;
-		lfence();
         printf("%d", bit);
         fflush(stdout);
 
