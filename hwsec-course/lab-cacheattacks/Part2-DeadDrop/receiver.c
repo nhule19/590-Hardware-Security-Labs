@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 		}
     
         current_char = (current_char << 1) | bit;
-        bit_count = 1;
+        bit_count++;
 
         if (bit_count == 8) {
             printf("%c", current_char);
