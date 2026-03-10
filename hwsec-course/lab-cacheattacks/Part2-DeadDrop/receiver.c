@@ -30,11 +30,15 @@ int main(int argc, char **argv)
 	while (listening) {
 
 		// Put your covert channel code here
-		uint64_t start = rdtscp();
+		uint64_t start;
+		asm volatile ("rdtscp\n\t":"=a"(start));
+		
 
         tmp = *((char*)buf);
 
-        uint64_t latency = rdtscp() - start;
+		uint64_t latency;
+		asm volatile ("redtscp\n\t":"=a"(latency));
+        latency = latency - start;
 
         int bit;
 
