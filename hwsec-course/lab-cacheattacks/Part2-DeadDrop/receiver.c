@@ -28,8 +28,8 @@ int main(int argc, char **argv)
 	printf("Receiver now listening.\n");
 
 	bool listening = true;
-	int current_char;
-	int bit_count;
+	int current_char = 0;
+	int bit_count = 0;
 	while (listening) {
 
 		// Put your covert channel code here
