@@ -49,10 +49,6 @@ int main(int argc, char **argv)
                 for (size_t j = 0; j < BUFF_SIZE; j += 64)
                     tmp = ((char*)buf)[j];
             }
-            else {
-                // Stay idle (do nothing)
-                for (volatile int k = 0; k < TIMESLOT; k++);
-            }
             for (volatile int k = 0; k < TIMESLOT; k++);
         }
     }

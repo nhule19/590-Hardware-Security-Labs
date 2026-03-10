@@ -36,6 +36,10 @@ int main(int argc, char **argv)
 
 		uint64_t latency = measure_one_block_access_time((uint64_t)buf);
 
+		for (size_t j = 64; j < BUFF_SIZE; j += 64) {
+    		tmp = ((char*)buf)[j];
+		}
+		
         int bit;
 
         if (latency > THRESHOLD) {
@@ -51,7 +55,6 @@ int main(int argc, char **argv)
         if (bit_count == 8) {
             printf("%c", current_char);
             fflush(stdout);
-			listening = false;
             bit_count = 0;
             current_char = 0;
         }
