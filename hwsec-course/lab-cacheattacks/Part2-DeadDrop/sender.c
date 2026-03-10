@@ -5,6 +5,7 @@
 
 // TODO: define your own buffer size
 #define BUFF_SIZE (1<<21)
+#define TIMESLOT 100000
 //#define BUFF_SIZE [TODO]
 
 int main(int argc, char **argv)
@@ -21,8 +22,9 @@ int main(int argc, char **argv)
   // page allocation, TLB insertion, etc.
   // Thus, we use a dummy write here to trigger page allocation
   // so later access will not suffer from such overhead.
-  //*((char *)buf) = 1; // dummy write to trigger page allocation
+  *((char *)buf) = 1; // dummy write to trigger page allocation
 
+  volatile char tmp;
 
   // TODO:
   // Put your covert channel setup code here
@@ -36,8 +38,25 @@ int main(int argc, char **argv)
 
       // TODO:
       // Put your covert channel code here
-  }
+      for (int i = 0; text_buf[i] != '\0'; i++) {
+        char c = text_buf[i];
 
+        for (int b = 7; b >= 0; b--) {
+            int bit = (c >> b) & 1;
+
+            if (bit == 1) {
+                // Access many lines to fill cache set
+                for (size_t j = 0; j < BUFF_SIZE; j += 64)
+                    tmp = ((char*)buf)[j];
+            }
+            else {
+                // Stay idle (do nothing)
+                for (volatile int k = 0; k < TIMESLOT; k++);
+            }
+            for (volatile int k = 0; k < TIMESLOT; k++);
+        }
+    }
+}
   printf("Sender finished.\n");
   return 0;
 }
