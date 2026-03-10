@@ -1,6 +1,7 @@
 
 #include"util.h"
 // mman library to be used for hugepage allocations (e.g. mmap or posix_memalign only)
+#include <stdint.h>
 #include <sys/mman.h>
 #define BUFF_SIZE (1<<21)
 #define TIMESLOT 100000
@@ -27,30 +28,34 @@ int main(int argc, char **argv)
 	printf("Receiver now listening.\n");
 
 	bool listening = true;
+	int current_char;
+	int bit_count;
 	while (listening) {
 
 		// Put your covert channel code here
-		uint64_t start;
-		asm volatile ("rdtscp\n\t":"=a"(start));
-		
 
-        tmp = *((char*)buf);
-
-		uint64_t latency;
-		asm volatile ("rdtscp\n\t":"=a"(latency));
-        latency = latency - start;
+		uint64_t latency = measure_one_block_access_time((uint64_t)buf);
 
         int bit;
 
-        if (latency > THRESHOLD)
-            bit = 1;
-        else
-            bit = 0;
-        printf("%d", bit);
-        fflush(stdout);
+        if (latency > THRESHOLD) {
+			bit = 1;
+		}
+        else {
+			bit = 0;
+		}
+    
+        current_char = (current_char << 1) | bit;
+        bit_count = 1;
 
-        for (volatile int i = 0; i < TIMESLOT; i++);
-		listening = false;
+        if (bit_count == 8) {
+            printf("%c", current_char);
+            fflush(stdout);
+			listening = false;
+            bit_count = 0;
+            current_char = 0;
+        }
+		for (volatile int i = 0; i < TIMESLOT; i++);
     }
 	printf("Receiver finished.\n");
 
