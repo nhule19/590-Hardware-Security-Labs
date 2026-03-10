@@ -50,6 +50,7 @@ int main(int argc, char **argv)
         fflush(stdout);
 
         for (volatile int i = 0; i < TIMESLOT; i++);
+		listening = false;
     }
 	printf("Receiver finished.\n");
 
