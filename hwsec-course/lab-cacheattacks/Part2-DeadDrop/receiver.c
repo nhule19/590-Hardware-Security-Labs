@@ -37,7 +37,7 @@ int main(int argc, char **argv)
         tmp = *((char*)buf);
 
 		uint64_t latency;
-		asm volatile ("redtscp\n\t":"=a"(latency));
+		asm volatile ("rdtscp\n\t":"=a"(latency));
         latency = latency - start;
 
         int bit;
