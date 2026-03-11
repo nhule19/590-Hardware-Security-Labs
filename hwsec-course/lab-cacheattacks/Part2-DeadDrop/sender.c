@@ -6,14 +6,10 @@
 // TODO: define your own buffer size
 #define BUFF_SIZE (1<<21)
 
-#define TIMESLOT 100000
-
 #define L1_SIZE 32768
 #define L2_SIZE 1048576
 
 #define LINE_SIZE 64
-
-//#define BUFF_SIZE [TODO]
 
 int main(int argc, char **argv)
 {
@@ -36,6 +32,13 @@ int main(int argc, char **argv)
     // TODO:
     // Put your covert channel setup code here
 
+    uint64_t *eviction_buffer = (uint64_t *)malloc(L1_SIZE + L2_SIZE + 10000);
+
+    if (eviction_buffer == NULL) {
+        perror("Unable to malloc eviction buffer");
+        return EXIT_FAILURE;
+    }
+
     printf("Please type a message.\n");
 
     bool sending = true;
@@ -45,22 +48,22 @@ int main(int argc, char **argv)
 
         // TODO:
         // Put your covert channel code here
-        for (int i = 0; text_buf[i] != '\0'; i++) {
-            char c = text_buf[i];
 
-            // for (int b = 7; b >= 0; b--) {
-                int bit = c & 1;
+        char c = text_buf[0];
+        int transmit_bit = c & 0b1;
 
-                if (bit == 1) {
-                    // Access many lines to fill cache set
-                    for (size_t j = 0; j < BUFF_SIZE; j += LINE_SIZE)
-                        tmp = ((char*)buf)[j];
-                }
-                for (volatile int k = 0; k < TIMESLOT; k++);
-            // }
+        if (transmit_bit == 0b1) { // make latency small
+            for (int i = 0; i < 1090; i++) {
+                tmp = ((char*)buf)[i * 64];
+            }
+        } else { // make latency big (evict)
+            for (int i = 0; i < 1090; i++) {
+                tmp = eviction_buffer[i];
+            }
         }
         sending = false;
     }
+
   printf("Sender finished.\n");
   return 0;
 }
