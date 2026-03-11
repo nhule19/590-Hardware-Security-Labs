@@ -55,6 +55,7 @@ int main(int argc, char **argv)
                 for (volatile int k = 0; k < TIMESLOT; k++);
             }
         }
+        sending = false;
     }
   printf("Sender finished.\n");
   return 0;
