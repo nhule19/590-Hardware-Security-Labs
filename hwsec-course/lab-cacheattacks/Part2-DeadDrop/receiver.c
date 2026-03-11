@@ -103,7 +103,7 @@ int main(int argc, char **argv)
 		// L3 hit: ~40 cycles (~160 ns)  
 		// DRAM: ~100+ cycles (~400+ ns)
 		// Conservative threshold: 200 cycles
-		if (latency > 200) { 
+		if (latency > 110) { 
 			// Miss to L3/DRAM --> bit is 0
 			bit = 0;
 		} else { 
