@@ -34,12 +34,13 @@ int main(int argc, char **argv)
 
 	bool listening = true;
 	int bit;
+	int latency;
 	while (listening) {
 		delay(4);
 		// Put your covert channel code here
-		int latency = measure_one_block_access_time((uint64_t)buf);
+		latency = measure_one_block_access_time((uint64_t)buf);
 
-		if (latency > 105) { // miss, L3 cache -->  bit is 0
+		if (latency > 110) { // miss, L3 cache -->  bit is 0
 			bit = 0;
 		} else { // hit, L2 cache --> bit is 1
 			bit = 1;
@@ -47,7 +48,8 @@ int main(int argc, char **argv)
 		listening = false;
 	}
 
-	printf("\nBit: %d", bit);
+	printf("\nBit: %d\n", bit);
+	printf("Latency: %d\n", latency);
 	printf("Receiver finished.\n");
 
 	return 0;
