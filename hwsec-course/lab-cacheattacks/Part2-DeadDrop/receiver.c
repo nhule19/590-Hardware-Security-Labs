@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <sys/mman.h>
 
+#define BUFF_SIZE (1<<21)
+
 int main(int argc, char **argv)
 {
 	// Put your covert channel setup code here
