@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <sys/mman.h>
 #include <time.h>
+#include <fcntl.h>
+#include <sys/stat.h> 
 
 #define BUFF_SIZE (1<<21)
 
