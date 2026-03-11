@@ -15,7 +15,7 @@ int main(int argc, char **argv)
 	if (buf == (void*) - 1) {
 		perror("mmap() error\n");
 		exit(EXIT_FAILURE);
-	 }
+	}
 
 	*((char*)buf) = 1;
     volatile char tmp;
@@ -44,8 +44,7 @@ int main(int argc, char **argv)
 
         if (latency > THRESHOLD) {
 			bit = 1;
-		}
-        else {
+		} else {
 			bit = 0;
 		}
     
