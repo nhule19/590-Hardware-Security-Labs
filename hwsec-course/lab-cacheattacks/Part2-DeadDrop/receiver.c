@@ -3,8 +3,16 @@
 // mman library to be used for hugepage allocations (e.g. mmap or posix_memalign only)
 #include <stdint.h>
 #include <sys/mman.h>
+#include <time.h>
 
 #define BUFF_SIZE (1<<21)
+
+
+void delay (int seconds) {
+	long pause = seconds * CLOCKS_PER_SEC;
+	clock_t start = clock();
+	while (clock() - start < pause);
+}
 
 int main(int argc, char **argv)
 {
@@ -27,7 +35,7 @@ int main(int argc, char **argv)
 	bool listening = true;
 	int bit;
 	while (listening) {
-
+		delay(4);
 		// Put your covert channel code here
 		int latency = measure_one_block_access_time((uint64_t)buf);
 
@@ -36,6 +44,7 @@ int main(int argc, char **argv)
 		} else { // hit, L2 cache --> bit is 1
 			bit = 1;
 		}
+		listening = false;
 	}
 
 	printf("\nBit: %d", bit);
@@ -43,4 +52,6 @@ int main(int argc, char **argv)
 
 	return 0;
 }
+
+
 

@@ -11,6 +11,12 @@
 
 #define LINE_SIZE 64
 
+void delay (int seconds) {
+	long pause = seconds * CLOCKS_PER_SEC;
+	clock_t start = clock();
+	while (clock() - start < pause);
+}
+
 int main(int argc, char **argv)
 {
     // Allocate a buffer using huge page
