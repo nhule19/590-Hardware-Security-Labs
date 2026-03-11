@@ -19,14 +19,22 @@ void delay (int seconds) {
 
 int main(int argc, char **argv)
 {
+
+    int fd = shm_open("/covert_channel", O_CREAT | O_RDWR, 0666);
+    ftruncate(fd, BUFF_SIZE);
+
     // Allocate a buffer using huge page
     // See the handout for details about hugepage management
-    void *buf= mmap(NULL, BUFF_SIZE, PROT_READ | PROT_WRITE, MAP_POPULATE | MAP_ANONYMOUS | MAP_PRIVATE | MAP_HUGETLB, -1, 0);
+    char *buf = mmap(NULL, BUFF_SIZE,
+        PROT_READ|PROT_WRITE,
+        MAP_SHARED, fd, 0);
   
     if (buf == (void*) - 1) {
      perror("mmap() error\n");
      exit(EXIT_FAILURE);
     }
+
+    
     // The first access to a page triggers overhead associated with
     // page allocation, TLB insertion, etc.
     // Thus, we use a dummy write here to trigger page allocation
@@ -60,17 +68,18 @@ int main(int argc, char **argv)
 
         if (transmit_bit == 0b1) { // make latency small
             for (int i = 0; i < 1090; i++) {
-                tmp = ((char*)buf)[i * 64];
+                tmp = ((char*)buf)[0];
             }
         } else { // make latency big (evict)
             for (int i = 0; i < 1090; i++) {
-                tmp = eviction_buffer[i];
+                tmp = eviction_buffer[i * 64];
             }
         }
         sending = false;
     }
 
   printf("Sender finished.\n");
+  free(eviction_buffer);
   return 0;
 }
 

@@ -17,8 +17,10 @@ void delay (int seconds) {
 int main(int argc, char **argv)
 {
 	// Put your covert channel setup code here
-
-	void *buf= mmap(NULL, BUFF_SIZE, PROT_READ | PROT_WRITE, MAP_POPULATE | MAP_ANONYMOUS | MAP_PRIVATE | MAP_HUGETLB, -1, 0);
+	int fd = shm_open("/covert_channel", O_CREAT | O_RDWR, 0666);
+	char *buf = mmap(NULL, BUFF_SIZE,
+		PROT_READ|PROT_WRITE,
+		MAP_SHARED, fd, 0);
   
     if (buf == (void*) - 1) {
      perror("mmap() error\n");
@@ -35,10 +37,15 @@ int main(int argc, char **argv)
 	bool listening = true;
 	int bit;
 	int latency;
+
 	while (listening) {
 		delay(4);
 		// Put your covert channel code here
-		latency = measure_one_block_access_time((uint64_t)buf);
+		int total = 0;
+		for (int i = 0; i < 100; i++) {
+			total += measure_one_block_access_time((uint64_t)buf);
+		}
+		latency = total / 100;
 
 		if (latency > 110) { // miss, L3 cache -->  bit is 0
 			bit = 0;
