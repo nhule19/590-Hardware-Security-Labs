@@ -5,9 +5,13 @@
 
 // TODO: define your own buffer size
 #define BUFF_SIZE (1<<21)
+
 #define TIMESLOT 100000
+
 #define L1_SIZE 32768
 #define L2_SIZE 1048576
+
+#define LINE_SIZE 64
 
 //#define BUFF_SIZE [TODO]
 
@@ -44,16 +48,16 @@ int main(int argc, char **argv)
         for (int i = 0; text_buf[i] != '\0'; i++) {
             char c = text_buf[i];
 
-            for (int b = 7; b >= 0; b--) {
-                int bit = (c >> b) & 1;
+            // for (int b = 7; b >= 0; b--) {
+                int bit = c & 1;
 
                 if (bit == 1) {
                     // Access many lines to fill cache set
-                    for (size_t j = 0; j < BUFF_SIZE; j += 64)
+                    for (size_t j = 0; j < BUFF_SIZE; j += LINE_SIZE)
                         tmp = ((char*)buf)[j];
                 }
                 for (volatile int k = 0; k < TIMESLOT; k++);
-            }
+            // }
         }
         sending = false;
     }
