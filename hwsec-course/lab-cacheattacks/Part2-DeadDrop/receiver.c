@@ -10,12 +10,6 @@
 
 #define BUFF_SIZE (1<<21)
 
-void delay (int seconds) {
-	long pause = seconds * CLOCKS_PER_SEC;
-	clock_t start = clock();
-	while (clock() - start < pause);
-}
-
 int main(int argc, char **argv)
 {
 	// Put your covert channel setup code here
