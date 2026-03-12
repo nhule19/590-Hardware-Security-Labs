@@ -11,6 +11,7 @@
 
 #define L1_SIZE 32768
 #define L2_SIZE 1048576
+#define L3_SIZE 11534336
 
 #define LINE_SIZE 64
 
@@ -49,17 +50,17 @@ int main(int argc, char **argv)
     // TODO:
     // Put your covert channel setup code here
 
-    uint64_t *eviction_buffer = (uint64_t *)malloc(L1_SIZE + L2_SIZE + 10000);
+    uint64_t *eviction_buffer = (uint64_t *)malloc(L1_SIZE + L2_SIZE + 100000);
 
     if (eviction_buffer == NULL) {
         perror("Unable to malloc eviction buffer");
         return EXIT_FAILURE;
     }
 
-    printf("Please type a message.\n");
-
+    // printf("Please type a message.\n");
     bool sending = true;
     while (sending) {
+        printf("Please type a message.\n");
         char text_buf[128];
         fgets(text_buf, sizeof(text_buf), stdin);
 
@@ -69,19 +70,25 @@ int main(int argc, char **argv)
         char c = text_buf[0];
         int transmit_bit = c & 0b1;
 
+        printf("\nBit to transmit: %d\n", transmit_bit);
+
         if (transmit_bit == 0b1) { // make latency small
             for (int i = 0; i < 1090; i++) {
                 tmp = ((char*)buf)[0];
             }
         } else { // make latency big (evict)
-            for (int i = 0; i < 1090; i++) {
-                tmp = eviction_buffer[i * 64];
+            for (int i = 0; i < (L1_SIZE + L2_SIZE + 100000) / 8; i++) {
+                tmp = eviction_buffer[i];
             }
         }
         sending = false;
+        // Signal the receiver that the bit is ready
+        volatile char *flag = (volatile char *)&buf[4096];
+        *flag = 1;
+        for (volatile int i = 0; i < 100000; i++);
     }
 
-  printf("Sender finished.\n");
+  printf("Sender finished.\n\n\n");
   free(eviction_buffer);
   return 0;
 }
