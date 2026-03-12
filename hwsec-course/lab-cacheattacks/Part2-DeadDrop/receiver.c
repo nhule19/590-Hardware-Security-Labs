@@ -103,12 +103,14 @@ int main(int argc, char **argv)
 	volatile char warmup = buf[0];
 	(void)warmup;
 
+    int tmp2 = buf[0];
+
     for (int bit_index = 7; bit_index >= 0; bit_index--) {
         // wait for sender to signal it's ready
         while (*flag1 != 1) { }
 
         // measure latency of buf[0]
-        latencies[bit_index] = measure_one_block_access_time((uint64_t)buf);
+        latencies[bit_index] = measure_one_block_access_time((uint64_t)&buf[3]);
 
         int bit;
 		if (latencies[bit_index] > 130) {

@@ -224,12 +224,12 @@ int main(int argc, char **argv)
     for (int bit_idx = 7; bit_idx >= 0; bit_idx--) {
         int transmit_bit = (value >> bit_idx) & 1;
 
-        // Ensure buf[0] starts in cache before potential eviction
+        // ensure buf[0] starts in cache before potential eviction
         *((char *)buf) = 1;
 
         if (transmit_bit == 1) { // keep in cache
             for (volatile int i = 0; i < 109000; i++) {
-                tmp = ((char*)buf)[0];
+                tmp = ((char*)buf)[3];
             }
         } else { // evict from cache
             // Multiple passes over 2x L2 to defeat adaptive replacement
