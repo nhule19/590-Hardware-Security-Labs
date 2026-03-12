@@ -11,7 +11,8 @@ from tqdm import tqdm
 #executable_filename = ['make', 'run']
 
 # Run reference code:
-executable_filename = ['make', 'run-reference']
+#executable_filename = ['make', 'run-reference']
+executable_filename = ['make', 'run']
 
 num_runs = 100
 
