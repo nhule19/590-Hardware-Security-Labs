@@ -44,8 +44,7 @@ int main(int argc, char const *argv[]) {
         for (int set = 0; set < L2_NUM_SETS; set++) { // for each set
             int total = 0;
             for (int way = 0; way < L2_WAYS; way++) { // calculate latency for each way
-                total += measure_one_block_access_time(
-                    (uint64_t)&buf[set * LINE_SIZE + way * L2_NUM_SETS * LINE_SIZE]);
+                total += measure_one_block_access_time((uint64_t)&buf[set * LINE_SIZE + way * L2_NUM_SETS * LINE_SIZE]);
             }
             scores[set] += total;
         }
