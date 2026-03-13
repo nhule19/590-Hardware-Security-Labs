@@ -201,7 +201,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    *((char *)buf) = 1; // dummy write to trigger page allocation
+    *((char *)buf) = 1; // dummy write to trigger page allocation to minimize initial bit latency
 
     volatile char tmp;
 
@@ -212,6 +212,7 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    //flags for synchronization
     volatile char *flag1 = (volatile char *)&buf[4096];
     volatile char *flag2 = (volatile char *)&buf[8192];
 
@@ -221,10 +222,10 @@ int main(int argc, char **argv)
 
     int value = string_to_int(text_buf);
 
-    for (int bit_idx = 7; bit_idx >= 0; bit_idx--) {
-        int transmit_bit = (value >> bit_idx) & 1;
+    for (int bit_index = 7; bit_index >= 0; bit_index--) {
+        int transmit_bit = (value >> bit_index) & 1;
 
-        // ensure buf[0] starts in cache before potential eviction
+        // ensure buf[0] page starts activated before eviction, same as above
         *((char *)buf) = 1;
 
         if (transmit_bit == 1) { // keep in cache
@@ -232,7 +233,7 @@ int main(int argc, char **argv)
                 tmp = ((char*)buf)[3];
             }
         } else { // evict from cache
-            // Multiple passes over 2x L2 to defeat adaptive replacement
+            // multiple passes over L2 to evict and ensure eviction
             for (volatile int pass = 0; pass < 3; pass++) {
                 for (volatile size_t i = 0; i < (L3_SIZE * 2) / sizeof(uint64_t); i++) {
                     tmp = eviction_buffer[i];
