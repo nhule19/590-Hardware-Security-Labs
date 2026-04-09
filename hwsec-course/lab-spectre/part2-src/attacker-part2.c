@@ -94,7 +94,6 @@ int run_attacker(int kernel_fd, char *shared_memory) {
         leaked_str[current_offset] = leaked_byte;
 
         if (leaked_byte == '\x00') {
-            printf("\nBroke at offset: %ld\n", current_offset);
             break;
         }
     }
