@@ -1,0 +1,7 @@
+universe         = vanilla
+getenv           = true
+initialdir       = $ENV(PWD)
+request_cpus     = 1
+notification     = Always
+should_transfer_files = NO
+queue
