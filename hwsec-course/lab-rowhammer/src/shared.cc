@@ -26,6 +26,23 @@ void * allocated_mem;
 void setup_PPN_VPN_map(void * mem_map,
                        std::map<uint64_t, uint64_t> &PPN_VPN_map) {
     // TODO: Exercise 1-3
+    PPN_VPN_map.clear();
+
+    const uint64_t total_size = 2ULL * 1024ULL * 1024ULL * 1024ULL;
+    const uint64_t page_size = HUGE_PAGE_SIZE;
+
+    for (uint64_t offset = 0; offset < total_size; offset += page_size) {
+        uint64_t virt_addr = (uint64_t)mem_map + offset;
+        uint64_t phys_addr = virt_to_phys(virt_addr);
+        if (phys_addr == 0) {
+            continue;
+        }
+
+        uint64_t ppn = phys_addr / page_size;
+        uint64_t vpn = virt_addr / page_size;
+        PPN_VPN_map[ppn] = vpn;
+    }
+    
 }
 
 /*
@@ -65,7 +82,7 @@ void * allocate_pages(uint64_t memory_size) {
  */
 
 
-uint64_t virt_to_phys(uint64_t virt_addr) {
+ uint64_t virt_to_phys(uint64_t virt_addr) {
     uint64_t phys_addr = 0;
 
     FILE * pagemap;
@@ -75,6 +92,7 @@ uint64_t virt_to_phys(uint64_t virt_addr) {
     // Compute the virtual page number from the virtual address
     uint64_t virt_page_number = virt_addr / 0x1000;
     uint64_t file_offset = virt_page_number * sizeof(uint64_t);
+    uint64_t page_offset = virt_addr & 0xFFF;
 
     if ((pagemap = fopen("/proc/self/pagemap", "r"))) {
         if (lseek(fileno(pagemap), file_offset, SEEK_SET) == file_offset) {
@@ -84,7 +102,7 @@ uint64_t virt_to_phys(uint64_t virt_addr) {
                     // TODO: Exercise 1-1
                     // Using the extracted physical page number,
                     // derive the physical address
-                    phys_addr = 0;
+                    phys_addr = (phys_page_number << 12) | page_offset;
                 } 
             }
         }
@@ -108,7 +126,18 @@ uint64_t virt_to_phys(uint64_t virt_addr) {
 
 uint64_t phys_to_virt(uint64_t phys_addr) {
     // TODO: Exercise 1-4
-    return 0;
+    const uint64_t page_size = HUGE_PAGE_SIZE;
+    uint64_t ppn = phys_addr / page_size;
+    uint64_t page_offset = phys_addr & (page_size - 1);
+
+    auto it = PPN_VPN_map.find(ppn);
+    if (it == PPN_VPN_map.end()) {
+        return 0;
+    }
+
+    uint64_t vpn = it->second;
+    uint64_t virt_addr = (vpn * page_size) + page_offset;
+    return virt_addr;
 }
 
 
