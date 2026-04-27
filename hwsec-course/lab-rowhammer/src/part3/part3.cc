@@ -11,7 +11,7 @@
 #define BANKS 16
 #define CONSISTENCY_RATE 0.95
 // TODO: Threshold derived in part2
-#define THRESHOLD 1000 
+#define THRESHOLD 380
 #define POOL_SIZE 1000
 #define ROUNDS  100
 
@@ -54,6 +54,59 @@ uint64_t median(uint64_t* vals, size_t size) {
 std::array<std::vector<uint64_t>, BANKS> bin_rows(uint64_t starting_addr, uint64_t final_addr) {
     // TODO - Exercise 3-1
     std::array<std::vector<uint64_t>, BANKS> bins;
+
+    for (uint64_t virt_addr = starting_addr; virt_addr < final_addr; virt_addr += ROW_STRIDE) {
+        uint64_t phys_addr = virt_to_phys(virt_addr);
+
+        if (phys_addr == 0) {
+            continue;
+        }
+
+        bool placed = false;
+
+        for (size_t i = 0; i < BANKS; i++) {
+            if (bins[i].empty()) {
+                bins[i].push_back(phys_addr);
+                placed = true;
+                break;
+            }
+
+            uint64_t existing_phys = bins[i][0];
+            uint64_t existing_virt = phys_to_virt(existing_phys);
+
+            if (existing_virt == 0) {
+                continue;
+            }
+
+            uint64_t* time_vals = (uint64_t*) calloc(ROUNDS, sizeof(uint64_t));
+
+            for (int j = 0; j < ROUNDS; j++) {
+                time_vals[j] = measure_bank_latency(
+                    (volatile char*)virt_addr,
+                    (volatile char*)existing_virt
+                );
+            }
+
+            uint64_t med = median(time_vals, ROUNDS);
+            free(time_vals);
+
+            if (med > THRESHOLD) {
+                bins[i].push_back(phys_addr);
+                placed = true;
+                break;
+            }
+        }
+
+        if (!placed) {
+            for (size_t i = 0; i < BANKS; i++) {
+                if (bins[i].empty()) {
+                    bins[i].push_back(phys_addr);
+                    break;
+                }
+            }
+        }
+    }
+    
     return bins;
 }
 
