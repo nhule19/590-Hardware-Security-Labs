@@ -172,7 +172,15 @@ char* get_rand_addr(size_t buf_size)
  */
 uint64_t measure_bank_latency(volatile char *addr_A, volatile char *addr_B) {
     // TODO: Exercise 2-2
-    return 0; 
+    clflush(addr_A);
+    clflush(addr_B);
+
+    uint64_t start = get_time();
+    volatile char dummy = addr_A[0];
+    dummy += addr_B[0];
+    uint64_t end = get_time();
+
+    return end - start;
 }
 
 /*
