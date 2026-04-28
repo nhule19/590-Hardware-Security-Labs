@@ -18,7 +18,34 @@ uint32_t genParity(uint32_t data) {
     uint32_t parity = 0;
 
     // TODO: Exercise 5-2, Generate the parity bits for the data
-    
+    for (int p = 0; p < 5; p++) {
+        uint32_t bit = 0;
+
+        for (int d = 0; d < NUM_DATA_BITS; d++) {
+            if (parity_eqs[p][d]) {
+                bit ^= getBit(data, d);
+            }
+        }
+
+        if (bit) {
+            parity |= (1U << p);
+        }
+    }
+    uint32_t p5 = 0;
+
+    for (int d = 0; d < NUM_DATA_BITS; d++) {
+        p5 ^= getBit(data, d);
+    }
+
+    for (int p = 0; p < 5; p++) {
+        p5 ^= getBit(parity, p);
+    }
+
+    if (p5) {
+        parity |= (1U << 5);
+    }
+
+    return parity;
     return parity;
 }
 
@@ -34,27 +61,41 @@ struct hamming_result findHammingErrors(uint32_t encoded) {
     uint32_t regenParity = genParity(decoded.data);
 
     // TODO: Exercise 5-4, Compute the syndrome
-    uint32_t syndrome = 0;
-
-    // TODO: Exercise 5-4, Compute P5 Error bit
+    uint32_t syndrome = (recordedParity ^ regenParity) & 0x1F;
     uint32_t P5_Error_bit = 0;
- 
-    // TODO: Exercise 5-4, Determine the error type
+    for (int i = 0; i < TOTAL_BITS; i++) {
+        P5_Error_bit ^= getBit(encoded, i);
+    }
     _ERROR_TYPE error = NO_ERROR;
+
+    if (syndrome == 0 && P5_Error_bit == 0) {
+        error = NO_ERROR;
+    } else if (syndrome != 0 && P5_Error_bit == 1) {
+        error = SINGLE_ERROR;
+    } else if (syndrome != 0 && P5_Error_bit == 0) {
+        error = DOUBLE_ERROR;
+    } else if (syndrome == 0 && P5_Error_bit == 1) {
+        error = PARITY_ERROR;
+    }
     
     return {error, syndrome};
 }
-
 // Use findHammingErrors to check if there's an error
 // If there's an error, correct it!
 uint32_t verifyAndRepair(uint32_t encoded) {
 
-    // Determine the error type
     struct hamming_result result = findHammingErrors(encoded);
-
-    // TODO: Exercise 5-4, If the error type is correctable, correct it here!
     uint32_t out = encoded;
+    if (result.error == SINGLE_ERROR) {
+        out = flipBit(out, result.syndrome - 1);
+    }
 
+    // If only P5 is wrong, flip the final parity bit.
+    else if (result.error == PARITY_ERROR) {
+        out = flipBit(out, TOTAL_BITS - 1);
+    }
+
+    // NO_ERROR and DOUBLE_ERROR return the original value.
     return out;
 }
 
