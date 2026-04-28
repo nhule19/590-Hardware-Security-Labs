@@ -7,9 +7,8 @@
 #define BANK_FUNC_CAND 0
 
 // TODO: Try different combinations of these parameters to find the best ones for the machine!
-#define VIC_DATA 0x00
-#define AGG_DATA 0xff 
-
+#define VIC_DATA 0xFF
+#define AGG_DATA 0xFF
 #define NUM_HAMMER_ATTEMPTS 100
 
 
@@ -29,6 +28,55 @@ uint64_t hammer_addresses(uint64_t vict, uint64_t attA, uint64_t attB, uint64_t 
                       
     uint64_t foundFlips = 0;
     // TODO: Exercise 4-1
+    
+    // PRIME
+    // align by row base
+    uint64_t vict_row_base = vict & ~((uint64_t)ROW_SIZE - 1);
+    uint64_t attA_row_base = attA & ~((uint64_t)ROW_SIZE - 1);
+    uint64_t attB_row_base = attB & ~((uint64_t)ROW_SIZE - 1);
+
+    // fill rows with VIC_DATA and AGG_DATA
+    memset((void*)vict_row_base, VIC_DATA, ROW_SIZE);
+    memset((void*)attA_row_base, AGG_DATA, ROW_SIZE);
+    memset((void*)attB_row_base, AGG_DATA, ROW_SIZE);
+
+    // ensure rows go to DRAM
+    for (uint64_t offset = 0; offset < ROW_SIZE; offset += CACHELINE_SIZE) {
+        clflush((void*)(vict_row_base + offset));
+        clflush((void*)(attA_row_base + offset));
+        clflush((void*)(attB_row_base + offset));
+    }
+    mfence();
+
+    // HAMMER
+    volatile uint8_t *attA_ptr = (volatile uint8_t*)attA;
+    volatile uint8_t *attB_ptr = (volatile uint8_t*)attB;
+
+    // access and ensure rows go to DRAM
+    for (uint64_t i = 0; i < HAMMERS_PER_ITER; i++) {
+        *attA_ptr;
+        *attB_ptr;
+        clflush((void*)attA_ptr);
+        clflush((void*)attB_ptr);
+    }
+    mfence();
+
+
+    // PROBE
+    for (uint64_t offset = 0; offset < ROW_SIZE; offset += CACHELINE_SIZE) {
+        clflush((void*)(vict_row_base + offset));
+    }
+    mfence();
+
+    volatile uint8_t *vict_ptr = (volatile uint8_t*)vict_row_base;
+    for (uint64_t i = 0; i < ROW_SIZE; i++) {
+        if (vict_ptr[i] != VIC_DATA) {
+            foundFlips = 1;
+            break;
+        }
+    }
+
+
     return foundFlips; 
 }
 
